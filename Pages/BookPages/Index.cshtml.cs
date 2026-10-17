@@ -1,0 +1,44 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
+using Bratu_Angelina_Lab2.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
+namespace Bratu_Angelina_Lab2.Pages.BookPages;
+
+public class IndexModel : PageModel
+{
+    private readonly Bratu_Angelina_Lab2Context _context;
+
+    public IndexModel(Bratu_Angelina_Lab2Context context)
+    {
+        _context = context;
+    }
+
+    public IList<Book> Book { get; set; } = default!;
+    [BindProperty(SupportsGet = true)]
+    public int? AuthorID { get; set; }
+
+    public SelectList AuthorList { get; set; } = default!;
+
+    public async Task OnGetAsync()
+    {
+        AuthorList = new SelectList(await _context.Authors
+            .Select(a => new
+            {
+                a.ID,
+                FullName = a.FirstName + " " + a.LastName
+            })
+            .ToListAsync(), "ID", "FullName", AuthorID);
+
+        var books = _context.Book
+            .Include(b => b.Publisher)
+            .Include(b => b.Author)
+            .AsQueryable();
+        if (AuthorID.HasValue)
+        {
+            books = books.Where(b => b.AuthorID == AuthorID.Value);
+        }
+        Book=await books.ToListAsync();
+    }
+}
