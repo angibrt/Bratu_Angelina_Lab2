@@ -16,22 +16,24 @@
             <th>
                 @Html.DisplayNameFor(model => model.Category[0].CategoryName)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category[0].BookCategories)
-            </th>
+            
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model.Category) {
-        <tr>
+            string selectedRow = "";
+            if (item.ID == Model.CategoryID)
+            {
+                selectedRow = "table-success";
+            }
+
+            <tr class="@selectedRow">
             <td>
                 @Html.DisplayFor(model => item.CategoryName)
             </td>
             <td>
-                @Html.DisplayFor(model => item.BookCategories)
-            </td>
-            <td>
+                <a asp-page="./Index" asp-route-id="@item.ID">Select</a> |
                 <a asp-page="./Edit" asp-route-id="@item.ID">Edit</a> |
                 <a asp-page="./Details" asp-route-id="@item.ID">Details</a> |
                 <a asp-page="./Delete" asp-route-id="@item.ID">Delete</a>
@@ -40,3 +42,25 @@
 }
     </tbody>
 </table>
+@if (Model.Books != null)
+{
+    <h3>Books in Selected Category</h3>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Books)
+            {
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Author?.FullName</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

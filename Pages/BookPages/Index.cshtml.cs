@@ -19,14 +19,24 @@ public class IndexModel : PageModel
     public BookData BookD { get; set; }
     public int BookID { get; set; }
     public int CategoryID { get; set; }
+    public string TitleSort { get; set; }
+    public string AuthorSort { get; set; }
+    public string CurrentFilter { get; set; }
+
     [BindProperty(SupportsGet = true)]
     public int? AuthorID { get; set; }
 
     public SelectList AuthorList { get; set; } = default!;
 
-    public async Task OnGetAsync(int? id, int? categoryID)
+    public async Task OnGetAsync(int? id, int? categoryID, string sortOrder, string searchString)
     {
         BookD = new BookData();
+
+        TitleSort = String.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
+        AuthorSort = sortOrder == "author" ? "author_desc" : "author";
+
+        CurrentFilter = searchString;
+
         AuthorList = new SelectList(await _context.Authors
             .Select(a => new
             {
@@ -39,18 +49,23 @@ public class IndexModel : PageModel
             .Include(b => b.Publisher)
             .Include(b => b.Author)
             .Include(b => b.BookCategories)
-                .ThenInclude(b => b.Category)
+            .ThenInclude(b => b.Category)
             .AsNoTracking()
             .AsQueryable();
         if (AuthorID.HasValue)
         {
             books = books.Where(b => b.AuthorID == AuthorID.Value);
         }
-        BookD.Books = await books
+        if (!String.IsNullOrEmpty(searchString))
+{
+    books = books.Where(b =>
+        b.Author.FirstName.Contains(searchString) ||
+        b.Author.LastName.Contains(searchString) ||
+        b.Title.Contains(searchString));
+}
+            BookD.Books = await books
     .OrderBy(b => b.Title)
     .ToListAsync();
-
-        Book = BookD.Books.ToList();
 
         if (id != null)
         {
@@ -61,5 +76,22 @@ public class IndexModel : PageModel
 
             BookD.Categories = book.BookCategories.Select(s => s.Category);
         }
+        switch (sortOrder)
+        {
+            case "title_desc":
+                BookD.Books = BookD.Books.OrderByDescending(s =>s.Title);
+                break;
+            case "author_desc":
+                BookD.Books = BookD.Books.OrderByDescending(s =>s.Author.FullName);
+                break;
+            case "author":
+                BookD.Books = BookD.Books.OrderBy(s =>s.Author.FullName);
+                break;
+            default:
+                BookD.Books = BookD.Books.OrderBy(s => s.Title);
+                break;
+        }
+        Book = BookD.Books.ToList();
+
     }
 }
