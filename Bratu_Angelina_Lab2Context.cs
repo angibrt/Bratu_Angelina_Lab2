@@ -6,4 +6,7 @@ public class Bratu_Angelina_Lab2Context(DbContextOptions<Bratu_Angelina_Lab2Cont
     public DbSet<Bratu_Angelina_Lab2.Models.Publisher> Publisher { get; set; } = default!;
     public DbSet<Bratu_Angelina_Lab2.Models.Authors> Authors { get; set; } = default!;
     public DbSet<Bratu_Angelina_Lab2.Models.Category> Category { get; set; } = default!;
+    public DbSet<Bratu_Angelina_Lab2.Models.Member> Member { get; set; } = default!;
+    public DbSet<Bratu_Angelina_Lab2.Models.Borrowing> Borrowing { get; set; } = default!;
+
 }
